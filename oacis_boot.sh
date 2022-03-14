@@ -53,11 +53,20 @@ done
 
 
 # check if contianer is already running
-docker compose ps | grep "running"
-if [ $? -eq 0 ]; then
-  set +x
-  echo "====== container is already running ======"
-  exit 0
+COMPOSE_PS_JSON=$(docker compose ps --format json)
+if [ "${COMPOSE_PS_JSON}" != '[]' ]; then
+  echo "${COMPOSE_PS_JSON}"
+  if echo "${COMPOSE_PS_JSON}" | grep -q '"State":"running"'; then
+    set +x
+    echo "====== container is already running ========"
+  elif echo "${COMPOSE_PS_JSON}" | grep -q '"State":"exited"'; then
+    set +x
+    echo "====== there is a stopped container ========"
+    echo "====== Use ./oacis_start.sh to reboot ======"
+  else
+    echo "====== unexpected container status ========="
+  fi
+  exit 1
 fi
 
 # set SSH_AUTH_SOCK_APP
@@ -91,7 +100,8 @@ mkfifo temp.pipe
 docker compose logs -f --since 0s > >(tee temp.pipe) 2> /dev/null &
 trap "kill -9 $!" 1 2 3 15
 # equivalent to `docker compose logs ... | tee temp.pipe`
-# but we use process substitution to get the PID of `docker`
+# but we use process substitution to get the PID of `docker compose logs`
+# in case we receive the signal, we kill `docker compose logs`
 set +x
 grep --line-buffered -m 1 "OACIS READY" > /dev/null < temp.pipe
 # to stop `docker compose logs -f`, multiple signals are needed
