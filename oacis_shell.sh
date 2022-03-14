@@ -5,7 +5,7 @@ cd $(dirname $0)
 # parse option
 usage() {
     echo "Usage: ./oacis_shell.sh [OPTIONS]"
-    echo "  login to the container"
+    echo "  Login to the container"
     echo
     echo "Options:"
     echo "  -h, --help: show this message"
@@ -27,7 +27,7 @@ do
       shift
       ;;
     *)
-      echo "[Error] invalid number of argument"
+      echo "[Error] invalid argument"
       usage
       exit 1
       ;;

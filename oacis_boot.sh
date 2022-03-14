@@ -44,7 +44,7 @@ do
       shift
       ;;
     *)
-      echo "[Error] invalid number of argument"
+      echo "[Error] invalid argument"
       usage
       exit 1
       ;;
@@ -114,5 +114,6 @@ rm temp.pipe
 
 # if dump file exists, prompt to run oacis_restore_db
 if [ -e "Result/db_dump" ]; then
+  echo
   echo "===== 'Result/db_dump' file is found. Run ./oacis_restore_db.sh to restore the database ===="
 fi
