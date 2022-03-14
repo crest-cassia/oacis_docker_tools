@@ -111,3 +111,8 @@ while kill -0 $! 2> /dev/null; do
   sleep 0.1
 done
 rm temp.pipe
+
+# if dump file exists, prompt to run oacis_restore_db
+if [ -e "Result/db_dump" ]; then
+  echo "===== db_dump file is found. Run ./oacis_restore_db.sh to restore the database ===="
+fi
