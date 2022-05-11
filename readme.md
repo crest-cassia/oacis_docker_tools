@@ -2,7 +2,7 @@
 
 A suite of scripts to use [OACIS docker](https://github.com/crest-cassia/oacis_docker).
 
-## Usage
+## Basic Usage
 
 ### 1. Create a working directory anywhere you like.
 
@@ -15,6 +15,7 @@ $ cd oacis
 
 ```shell
 git clone https://github.com/crest-cassia/oacis_docker_tools.git
+cd oacis_docker_tools
 ```
 
 ### 3. Start OACIS container
@@ -25,8 +26,10 @@ $ ./oacis_boot.sh
 
 A container of OACIS launches. It takes some time until the launch completes.
 
-You can access OACIS at http://localhost:3000. You may change the port by specifying `-p` option.
-You can also access Jupyter notebook at http://localhost:8888, whose port may be changed by `-j` option.
+- Visit http://localhost:3000 to access OACIS. You may change the port by specifying `-p` option.
+- Visit http://localhost:8888 to access Jupyter notebook with OACIS API. The port may be changed by `-j` option.
+
+See [OACIS documentation](http://crest-cassia.github.io/oacis/).
 
 ### 4. stopping the container temporarily
 
@@ -34,30 +37,64 @@ You can also access Jupyter notebook at http://localhost:8888, whose port may be
 $ ./oacis_stop.sh
 ```
 
-Although the server is stopped, the data still exists.
-You can restart the container by running `oacis_boot` again.
+Even after the server is stopped, the data (including your simulation results) are not deleted. In other words, the virtual machine image still exists.
+Restart the container by running `oacis_boot` again.
 
 ```shell
 $ ./oacis_boot.sh
 ```
 
-### 5. login to the shell
+## Other commands
+
+### stopping the container permanently
+
+When you would like to remove the docker container as well as the docker volumes, run the following command:
+
+```shell
+$ ./oacis_terminate.sh
+```
+
+Note: **The database is deleted. Make sure to make a backup if you want to save your results somewhere.**
+
+The simulation output files are stored in `Result` directory, which is not deleted by the above command. To delete all the files, remove `Result` directory as well.
+
+```shell
+$ rm -rf Result
+```
+
+### making a backup and restoring from it
+
+When we would like to move all the data to other directory or make a backup, run the following command:
+```shell
+$ ./oacis_dump_db.sh
+```
+All the data stored in the database running on the container are dumped into `Result` directory.
+
+After you run the above command, send `Result` directory to the place you like. For instance, run the following:
+```shell
+$ rsync -avhz --progress Result /path/to/backup
+```
+
+To restore the data from a backup, copy the backup to the `Result` directory first and then run the restore command.
+Make sure that OACIS must be booted in advance.
+```shell
+$ ./oacis_boot.sh                # make sure that OACIS is running
+$ rsync -avhz --progress /path/to/backup Result
+$ ./oacis_restore_db.sh
+```
+
+### logging to the shell
+
+When you would like to login to the shell on the docker container for trouble shooting, run the following command:
 
 ```shell
 $ ./oacis_shell.sh
 ```
 
 
-### 6. stopping the container permanently
-
-```shell
-$ ./oacis_terminate.sh
-```
-
-
 ## SSH agent setup
 
-On the container, you can use the SSH agent running on the host OS. If environemnt varialbe `SSH_AUTH_SOCK` is set in the host OS, the agent is mounted on the container.
+On the container, you can use the SSH agent running on the *host OS*. If environemnt varialbe `SSH_AUTH_SOCK` is set in the host OS, the agent is mounted on the container.
 Here is how to set up SSH agent on your host OS and use it on the container.
 
 ### 1. Create a key pair and add it to authorized_keys.
@@ -89,7 +126,7 @@ Agent pid 97280
 ```
 
 Edit `~/.ssh/config` file. This file is mounted on the container when running `oacis_boot.sh`.
-The information required for SSH connection is determined by referring to this file.
+The information required for SSH connection is determined by this file.
 
 
 ### 3. Add your key to the agent.
@@ -101,7 +138,7 @@ $ ssh-add ~/.ssh/id_rsa
 ```
 
 Now you should be able to connect to a remote host wihtout entering a password.
-Please test your connection from your host OS.
+Please test your connection from your host OS. You should be able to connect to a new shell without entering a password.
 
 ```shell
 $ ssh localhost
@@ -117,8 +154,10 @@ $ ./oacis_boot.sh
 
 ### 5. Register your host OS on OACIS
 
-Go to the page of host list. Add a host with name "docker-host". You'll be able to run your simulators on your host OS.
+Go to the page of host list. Add a host with name **"docker-host"**. You'll be able to run your simulators on your host OS.
 You may also register hosts listed on `~/.ssh/config`. Do not forget to set up [xsub](http://github.com/crest-cassia/xsub) on the remote hosts.
+
+See the document for details: [How to setup host on OACIS](http://crest-cassia.github.io/oacis/en/configuring_host.html)
 
 # License
 oacis_docker_tools is a part of OACIS. OACIS is published under the term of the MIT License (MIT).
